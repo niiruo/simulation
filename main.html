@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ENSO Live Map Simulation | Sir Wowie Studios</title>
+<style>
+:root{--ink:#16334a;--blue:#0a6597;--light:#eaf6fc;--gold:#ffc247;--rain:#d9f4ff}
+*{box-sizing:border-box}body{margin:0;background:#edf4f8;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{background:linear-gradient(120deg,#10283f,#126b9a);color:white;text-align:center;padding:20px 14px}
+header h1{font-size:clamp(24px,4vw,36px);margin:0}header p{margin:7px 0 0;color:#d7efff}
+main{max-width:1160px;margin:18px auto;padding:0 13px 30px}
+.intro,.controls,.explain,.legendbox{background:white;border-radius:14px;padding:14px 16px;margin-bottom:13px;box-shadow:0 3px 13px #16334a12;line-height:1.5}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}
+button{border:0;border-radius:9px;padding:11px 15px;font-weight:bold;cursor:pointer;background:#e5eef4;color:var(--ink)}
+button.active{background:#126b9a;color:white}.primary{background:#126b9a;color:#fff}
+.mapcard{background:#fff;border-radius:16px;padding:12px;box-shadow:0 3px 15px #16334a18}
+.maphead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:3px 4px 10px}
+.maphead h2{font-size:20px;margin:0}.status{background:#eaf4f8;padding:7px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+.mapwrap{overflow:hidden;border-radius:12px;border:1px solid #b5d4e5;background:#9bd8ef}
+svg{display:block;width:100%;height:auto}
+.land{fill:#d8d0ad;stroke:#827e69;stroke-width:1.5}.island{fill:#d8d0ad;stroke:#827e69;stroke-width:1}
+.maplabel{font-family:Arial,sans-serif;fill:#183e55;font-weight:bold;font-size:17px;paint-order:stroke;stroke:#d7f0f8;stroke-width:3px;stroke-linejoin:round}
+.smalllabel{font-size:12px;font-weight:bold;fill:#17465f;paint-order:stroke;stroke:#bce7f4;stroke-width:2px}
+.waterlabel{font-size:24px;letter-spacing:4px;fill:#e4f8ff;opacity:.75;font-weight:bold}
+.phase-overlay{transition:opacity .8s}
+.windpath{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round;stroke-dasharray:10 13;filter:drop-shadow(0 1px 1px #28617a);animation:windflow 1.5s linear infinite}
+.windweak{stroke-width:2.5;stroke-dasharray:4 17;animation-duration:3.2s;opacity:.75}
+.windstrong{stroke-width:5;stroke-dasharray:13 8;animation-duration:.75s}
+@keyframes windflow{to{stroke-dashoffset:-46}}
+.cloudgroup{animation:cloudmove 12s linear infinite}.cloudgroup.c2{animation-duration:17s;animation-delay:-6s}
+@keyframes cloudmove{0%{transform:translateX(-25px)}50%{transform:translateX(25px)}100%{transform:translateX(-25px)}}
+.raindrop{stroke:#d9f6ff;stroke-width:3;stroke-linecap:round;animation:rainfall .75s linear infinite}
+.raindrop:nth-child(2n){animation-delay:-.3s}.raindrop:nth-child(3n){animation-delay:-.55s}
+@keyframes rainfall{0%{transform:translateY(-5px);opacity:0}30%{opacity:1}100%{transform:translateY(18px);opacity:0}}
+.sunray{stroke:#ffca50;stroke-width:5;stroke-linecap:round;transform-origin:0 0;animation:pulse 2s ease-in-out infinite alternate}
+@keyframes pulse{to{opacity:.35;stroke-width:2}}
+.heatwave{fill:none;stroke:#ffb43b;stroke-width:3;stroke-dasharray:5 8;animation:heat 2s linear infinite;opacity:.9}
+@keyframes heat{to{stroke-dashoffset:-26}}
+.warmwater{fill:#ffb84d;opacity:.5;stroke:#ffdf87;stroke-width:2;transition:all .8s}
+.coldwater{fill:#1b83bd;opacity:.38;stroke:#b5eaff;stroke-width:2;transition:all .8s}
+.currentarrow{fill:none;stroke:#ffe7a4;stroke-width:4;stroke-dasharray:8 9;animation:windflow 2s linear infinite;transition:all .7s}
+.raincloud{transition:transform .8s}
+.legend{display:flex;gap:13px;flex-wrap:wrap;font-size:12px;padding:10px 3px 2px}
+.legend span{display:flex;align-items:center;gap:5px}.swatch{width:14px;height:14px;border-radius:4px;display:inline-block}
+.mapnote{font-size:12px;color:#5e7686;padding:8px 4px 2px}
+.controls h3{margin:0 0 9px}.controlrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.controlrow input{width:min(280px,55vw);accent-color:#126b9a}
+.explain{border-left:5px solid #16a39a;background:#f4fffd}
+.explain h3{margin:0 0 5px}.explain p{margin:0}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+.readout{background:#f1f6f9;border-radius:10px;padding:10px;font-size:13px}.readout b{display:block;color:#145c82;margin-bottom:4px}
+footer{text-align:center;font-size:12px;color:#728694;padding:16px}
+@media(max-width:650px){.readouts{grid-template-columns:1fr}.maplabel{font-size:20px}.waterlabel{font-size:22px}}
+</style></head>
+<body>
+<header><h1>🌏 ENSO: PHILIPPINES & PACIFIC OCEAN</h1><p>Animated weather map simulation • Follow the winds, clouds, heat, and rainfall!</p></header>
+<main>
+<section class="intro"><b>Grade 10 Mission:</b> Observe the Philippines and the Pacific Ocean on one map. Switch between Neutral, El Niño, and La Niña. Watch how the trade winds, warm ocean water, clouds, and rainfall patterns change. <b>Remember:</b> these are simplified typical patterns, not a forecast for a specific day.</section>
+<div class="tabs">
+<button class="active" data-phase="neutral">🌤️ Neutral</button>
+<button data-phase="elnino">🔥 El Niño</button>
+<button data-phase="lanina">🌧️ La Niña</button>
+<button class="primary" id="play">▶ Animate all phases</button>
+</div>
+<section class="mapcard">
+<div class="maphead"><h2 id="mapTitle">🌤️ Neutral ENSO conditions</h2><span class="status" id="status">Typical trade winds</span></div>
+<div class="mapwrap">
+<svg viewBox="0 0 1100 570" role="img" aria-label="Map of the tropical Pacific Ocean showing the Philippines, Indonesia, Australia and the west coast of South America with animated winds, clouds, rainfall and ocean temperature">
+<defs>
+ <linearGradient id="oceanbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5db9d9"/><stop offset="1" stop-color="#1683b4"/></linearGradient>
+ <radialGradient id="warmgrad"><stop offset="0" stop-color="#ffdc79" stop-opacity=".9"/><stop offset="1" stop-color="#ff9e36" stop-opacity=".1"/></radialGradient>
+ <radialGradient id="coldgrad"><stop offset="0" stop-color="#d4f5ff" stop-opacity=".9"/><stop offset="1" stop-color="#1474b6" stop-opacity=".08"/></radialGradient>
+</defs>
+<rect width="1100" height="570" fill="url(#oceanbg)"/>
+<!-- latitude / longitude guides -->
+<g stroke="#d4f3fc" stroke-opacity=".3" stroke-width="1" stroke-dasharray="4 7">
+<path d="M0 115H1100 M0 235H1100 M0 355H1100 M0 475H1100"/>
+<path d="M180 0V570 M360 0V570 M540 0V570 M720 0V570 M900 0V570"/>
+</g>
+<g class="smalllabel"><text x="12" y="111">20°N</text><text x="12" y="231">10°N</text><text x="12" y="351">EQUATOR</text><text x="12" y="471">10°S</text></g>
+<!-- land masses, simplified recognizable geographic outlines -->
+<path class="land" d="M0 0H176 L166 33 145 55 136 82 116 95 103 128 82 145 62 137 46 117 22 105 0 111Z"/>
+<path class="land" d="M0 478 L45 455 74 461 94 490 90 525 64 545 0 552Z"/>
+<!-- Japan / islands -->
+<path class="island" d="M260 15l22 6 8 15-14 9-20-10Z M278 54l12 8-8 16-11-7Z"/>
+<!-- Philippines islands -->
+<g class="land">
+<path d="M215 188l16-9 12 8-3 18-13 8-14-9Z"/>
+<path d="M239 225l14-5 13 10-4 25-13 10-12-15Z"/>
+<path d="M230 271l18-5 14 12-6 20-19 8-13-16Z"/>
+<path d="M258 310l13-7 12 10-5 16-15 4-9-11Z"/>
+<path d="M277 346l10-3 7 10-6 12-10-5Z"/>
+<path d="M204 245l8-4 6 11-5 10-8-5Z"/>
+</g>
+<!-- Indonesia -->
+<g class="land">
+<path d="M105 365l56-12 52 9 26 18-38 12-48-6-40 5-35-13Z"/>
+<path d="M246 390l42-8 40 8-17 13-49 4-26-7Z"/>
+<path d="M330 406l35-7 29 11-22 12-37-4Z"/>
+</g>
+<!-- Papua / island -->
+<path class="land" d="M388 371l54-18 42 9-20 27-52 9-28-12Z"/>
+<!-- Australia -->
+<path class="land" d="M290 455l48-34 82-15 78 22 38 49-23 62-60 27-92-7-54-37-26-36Z"/>
+<!-- South America right edge -->
+<path class="land" d="M1038 0H1100V570H1060l-10-40-12-38 8-38-17-43 10-41-14-36 14-38-7-43 18-34-10-42 10-42Z"/>
+<!-- ocean labels -->
+<text class="waterlabel" x="460" y="280" text-anchor="middle">PACIFIC OCEAN</text>
+<text class="maplabel" x="184" y="165">PHILIPPINES</text>
+<text class="smalllabel" x="88" y="345">INDONESIA</text><text class="smalllabel" x="370" y="515">AUSTRALIA</text>
+<text class="smalllabel" x="1010" y="300" transform="rotate(-90 1010 300)">SOUTH AMERICA</text>
+<text class="smalllabel" x="540" y="380">EQUATOR</text>
+<!-- warm and cool water zones dynamically moved -->
+<ellipse id="warmPool" class="warmwater" cx="205" cy="350" rx="210" ry="72" fill="url(#warmgrad)"/>
+<ellipse id="warmGlow" cx="205" cy="350" rx="210" ry="72" fill="url(#warmgrad)" opacity=".75"/>
+<ellipse id="coldPool" class="coldwater" cx="930" cy="350" rx="130" ry="95" fill="url(#coldgrad)"/>
+<path id="heatwave1" class="heatwave" d="M310 260q-15-20 0-40t0-40 M350 263q-15-20 0-40t0-40 M390 260q-15-20 0-40t0-40"/>
+<!-- trade winds arrows flow east to west -->
+<g id="winds">
+<path class="windpath" d="M930 180 C760 145 560 150 370 185"/>
+<path class="windpath" d="M930 235 C760 205 560 210 370 240"/>
+<path class="windpath" d="M930 295 C760 270 560 275 370 300"/>
+</g>
+<!-- warm current arrows -->
+<path id="oceanCurrent" class="currentarrow" d="M310 340 C420 330 550 335 690 340"/>
+<!-- clouds and rainfall over west -->
+<g id="westWeather" class="raincloud">
+<g class="cloudgroup"><g fill="#f7fdff" stroke="#5b9eb8" stroke-width="2"><circle cx="135" cy="240" r="22"/><circle cx="162" cy="226" r="28"/><circle cx="190" cy="241" r="22"/><rect x="132" y="239" width="62" height="23" rx="11"/></g></g>
+<g id="westRain">
+<path class="raindrop" d="M145 270l-5 13 M165 270l-5 13 M185 270l-5 13 M155 292l-5 13 M178 292l-5 13"/>
+</g></g>
+<!-- clouds and rain over east -->
+<g id="eastWeather" class="raincloud">
+<g class="cloudgroup c2"><g fill="#f7fdff" stroke="#5b9eb8" stroke-width="2"><circle cx="825" cy="235" r="21"/><circle cx="852" cy="220" r="28"/><circle cx="880" cy="236" r="22"/><rect x="822" y="234" width="62" height="23" rx="11"/></g></g>
+<g id="eastRain"><path class="raindrop" d="M835 266l-5 13 M855 266l-5 13 M875 266l-5 13 M845 288l-5 13 M868 288l-5 13"/></g></g>
+<!-- intense sun -->
+<g id="sunGroup" transform="translate(310 105)">
+<g class="sunray"><path d="M0-42V-29 M0 29V42 M-42 0H-29 M29 0H42 M-30-30l10 10 M20 20l10 10 M30-30L20-20 M-20 20l-10 10"/></g>
+<circle r="22" fill="#ffd34f" stroke="#f7a928" stroke-width="3"/><text x="0" y="6" text-anchor="middle" font-size="20">☀</text>
+</g>
+<text id="sunText" x="310" y="157" text-anchor="middle" class="smalllabel">Warm ocean / rising air</text>
+<!-- map legend markers -->
+<g class="smalllabel"><text x="25" y="535">WESTERN PACIFIC</text><text x="520" y="535">CENTRAL PACIFIC</text><text x="885" y="535">EASTERN PACIFIC</text></g>
+</svg></div>
+<div class="legend"><span><i class="swatch" style="background:#ffb84d"></i>Warmer surface water</span><span><i class="swatch" style="background:#1b83bd"></i>Cooler water / upwelling</span><span>💨 Trade winds</span><span>☁️ Clouds</span><span>🌧️ Rain</span><span>☀️ Strong sunshine / heat</span></div>
+<div class="mapnote">Illustrative classroom map with simplified coastlines and island shapes. It is designed to show the broad tropical Pacific pattern, not for navigation or exact weather prediction.</div>
+</section>
+<section class="controls">
+<h3>🎮 Control the animation</h3>
+<div class="controlrow"><label for="speed"><b>Animation speed:</b></label><input id="speed" type="range" min="1" max="5" value="3"><span id="speedText">Normal</span><button id="pause">Ⅱ Pause animation</button></div>
+</section>
+<section class="explain"><h3 id="explainTitle">🌤️ Neutral conditions</h3><p id="explainText">Trade winds blow from east to west, pushing warm surface water toward Indonesia and the Philippines. Rising moist air helps form clouds and rain over the western Pacific. Cooler water can rise near South America.</p>
+<div class="readouts"><div class="readout"><b>💨 Trade winds</b><span id="windRead">Usual strength: east to west</span></div><div class="readout"><b>🌊 Ocean</b><span id="oceanRead">Warm water piled up in the western Pacific</span></div><div class="readout"><b>🌧️ Weather pattern</b><span id="weatherRead">Rain more likely over the western Pacific</span></div></div></section>
+</main><footer>© 2026 Sir Wowie Studios • Grade 10 Science • Offline animated ENSO map</footer>
+<script>
+const $=id=>document.getElementById(id);
+const phases={
+neutral:{title:"🌤️ Neutral ENSO conditions",status:"Typical trade winds",wind:"normal",warmX:205,warmRx:210,coldX:930,west:1,east:.35,sun:1,heat:0,windText:"Usual strength; blow from east to west.",ocean:"Warm surface water is pushed toward the western Pacific.",weather:"Rainfall is generally greater over the warm western Pacific.",desc:"Trade winds blow from east to west, pushing warm surface water toward Indonesia and the Philippines. Rising moist air helps form clouds and rain over the western Pacific. Cooler water can rise near South America."},
+elnino:{title:"🔥 El Niño",status:"Weakened trade winds • warmer eastern Pacific",wind:"weak",warmX:580,warmRx:330,coldX:900,west:.2,east:1,sun:1,heat:1,windText:"Weaken; warm water shifts eastward.",ocean:"Warm surface water spreads toward the central and eastern Pacific. Upwelling often weakens.",weather:"Rainfall shifts eastward; the Philippines often experiences drier conditions.",desc:"Trade winds weaken, allowing warm surface water to spread eastward. The central and eastern Pacific become warmer than normal. Clouds and rainfall shift farther east, and the Philippines often experiences hotter, drier conditions or reduced rainfall."},
+lanina:{title:"🌧️ La Niña",status:"Stronger trade winds • cooler eastern Pacific",wind:"strong",warmX:135,warmRx:180,coldX:930,west:1,east:.12,sun:.55,heat:0,windText:"Strengthen and push warm water farther west.",ocean:"Warm water piles up farther west; stronger upwelling brings cooler water to the eastern surface.",weather:"Rainfall often increases over the western Pacific, including the Philippines.",desc:"Trade winds become stronger, pushing warm surface water farther west toward Indonesia and the Philippines. More cool water rises in the eastern Pacific. Cloud formation and rainfall are often enhanced over the western Pacific, including the Philippines."}
+};
+let current="neutral",playing=false,cycle=null;
+function setPhase(p){current=p;let d=phases[p];$("mapTitle").textContent=d.title;$("status").textContent=d.status;$("explainTitle").textContent=d.title;$("explainText").textContent=d.desc;$("windRead").textContent=d.windText;$("oceanRead").textContent=d.ocean;$("weatherRead").textContent=d.weather;
+$("warmPool").setAttribute("cx",d.warmX);$("warmPool").setAttribute("rx",d.warmRx);$("warmGlow").setAttribute("cx",d.warmX);$("warmGlow").setAttribute("rx",d.warmRx);
+$("coldPool").setAttribute("cx",d.coldX);$("westWeather").style.opacity=d.west;$("eastWeather").style.opacity=d.east;$("sunGroup").style.opacity=d.sun;$("heatwave1").style.opacity=d.heat;
+document.querySelectorAll("[data-phase]").forEach(b=>b.classList.toggle("active",b.dataset.phase===p));
+let paths=[...document.querySelectorAll(".windpath")];paths.forEach(el=>{el.classList.remove("windweak","windstrong");if(d.wind==="weak")el.classList.add("windweak");if(d.wind==="strong")el.classList.add("windstrong")});
+$("oceanCurrent").style.opacity=p==="elnino"?"1":".35";$("oceanCurrent").style.strokeDasharray=p==="elnino"?"12 7":"8 9";
+}
+document.querySelectorAll("[data-phase]").forEach(b=>b.addEventListener("click",()=>{if(playing)stop();setPhase(b.dataset.phase)}));
+$("play").onclick=()=>{if(playing){stop();return}playing=true;$("play").textContent="Ⅱ Stop phase cycle";let seq=["neutral","elnino","lanina"];let i=0;setPhase(seq[i]);cycle=setInterval(()=>{i=(i+1)%seq.length;setPhase(seq[i])},5000)};
+function stop(){clearInterval(cycle);playing=false;$("play").textContent="▶ Animate all phases"}
+$("pause").onclick=()=>{let paused=$("pause").dataset.paused!=="yes";$("pause").dataset.paused=paused?"yes":"no";$("pause").textContent=paused?"▶ Resume animation":"Ⅱ Pause animation";document.querySelectorAll(".windpath,.cloudgroup,.raindrop,.sunray,.heatwave,.currentarrow").forEach(el=>el.style.animationPlayState=paused?"paused":"running")}
+$("speed").oninput=()=>{let v=+$("speed").value;let label=["Very slow","Slow","Normal","Fast","Very fast"][v-1];$("speedText").textContent=label;let duration=3.6-v*.55;document.querySelectorAll(".windpath,.cloudgroup,.raindrop,.sunray,.heatwave,.currentarrow").forEach(el=>{let base=el.classList.contains("cloudgroup")?12:el.classList.contains("raindrop")?.75:el.classList.contains("sunray")?2:el.classList.contains("windpath")?1.5:2;el.style.animationDuration=(base*(3/duration))+"s"})}
+setPhase("neutral");
+</script></body></html>
